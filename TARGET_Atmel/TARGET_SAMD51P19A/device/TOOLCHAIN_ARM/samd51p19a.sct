@@ -1,0 +1,32 @@
+#! armcc -E
+
+;SAMDG51P19A
+;512KB FLASH (0x80000) @ 0x000000000
+;192KB RAM (0x30000) @ 0x20000000
+
+#if !defined(MBED_BOOT_STACK_SIZE)
+  #define MBED_BOOT_STACK_SIZE 0x2000
+#endif
+
+#define Stack_Size MBED_BOOT_STACK_SIZE
+
+;SAMD51P19A: 256KB FLASH (0x40000) + 32KB RAM (0x8000)
+LR_IROM1 (0x00000000+0x4000) (0x80000-0x4000)  {    ; load region size_region
+    ER_IROM1 (0x00000000+0x4000) (0x80000-0x4000)  {  ; load address = execution address
+        *.o (RESET, +First)
+        *(InRoot$$Sections)
+        .ANY (+RO)
+    }
+
+    ; [RAM] Vector table dynamic copy: 136 vectors * 4 bytes
+    RW_IRAM1 (0x20000000+0x300) (0x30000-0x300)  {  ; RW data
+        .ANY (+RW +ZI)
+    }
+
+    ARM_LIB_HEAP AlignExpr(+0, 16) EMPTY
+        (0x2000000+0x30000 - AlignExpr(ImageLimit(RW_IRAM1), 16) - Stack_Size) { ;
+    }
+
+    ARM_LIB_STACK 0x20000000+0x30000 EMPTY -Stack_Size { ; Stack region growing down
+    }
+}

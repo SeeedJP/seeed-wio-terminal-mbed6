@@ -1,0 +1,65 @@
+{
+    "WIO_TERMINAL": {
+        "inherits": [
+            "Target"
+        ],
+        "core": "Cortex-M4F",
+        "extra_labels": [
+            "Atmel",
+            "SAMD51A",
+            "SAMD51P19A"
+        ],
+        "macros": [
+            "__SAMD51P19A__",
+            "USART_CALLBACK_MODE=true",
+            "EXTINT_CALLBACK_MODE=true",
+            "USART_CALLBACK_MODE=true",
+            "I2C_MASTER_CALLBACK_MODE=true",
+            "I2C_SLAVE_CALLBACK_MODE=true",
+            "TC_ASYNC=true",
+            "BOARD=101"
+        ],
+        "config": {
+            "stdio_uart": {
+                "help": "default STDIO_UART is defined in PinNames.h file, but it can be overridden"
+            },
+            "stdio_uart_tx": {
+                "help": "default TX STDIO pins is defined in PinNames.h file, but it can be overridden"
+            },
+            "stdio_uart_rx": {
+                "help": "default RX STDIO pins is defined in PinNames.h file, but it can be overridden"
+            }
+        },
+        "overrides": {
+            "boot-stack-size": "0x2000"
+        },
+        "supported_toolchains": [
+            "ARM",
+            "GCC_ARM"
+        ],
+        "default_toolchain": "ARM",
+        "device_has": [
+            "STDIO_MESSAGES",
+            "USTICKER",
+            "SLEEP",
+            "PORTIN",
+            "PORTOUT",
+            "INTERRUPTIN",
+            "SERIAL",
+            "SERIAL_ASYNCH",
+            "I2C",
+            "SPI",
+            "SPI_ASYNCH",
+            "USBDEVICE",
+            "MPU"
+        ],
+        "features_add": [
+            "STORAGE"
+        ],
+        "components_add": [
+            "SD"
+        ],
+        "c_lib": "std",
+        "device_name": "ATSAMD51P19"
+    }
+}
