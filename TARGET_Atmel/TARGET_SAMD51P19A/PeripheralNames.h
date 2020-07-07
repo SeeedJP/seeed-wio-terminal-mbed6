@@ -46,14 +46,8 @@ typedef enum {
 } SERCOMName;
 
 typedef enum {
-    ADC_0 = 0,
+    ADC_0,
     ADC_1,
-    ADC_2,
-    ADC_3,
-    ADC_4,
-    ADC_5,
-    ADC_6,
-    ADC_7,
 } ADCName;
 
 typedef enum {

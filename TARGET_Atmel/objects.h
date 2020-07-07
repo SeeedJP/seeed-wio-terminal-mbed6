@@ -24,6 +24,7 @@
 #include "us_ticker_defines.h"
 #include "i2c_master.h"
 #include "i2c_slave.h"
+#include "adc_feature.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,7 +74,8 @@ struct serial_s {
 
 #if DEVICE_ANALOGIN
 struct analogin_s {
-    enum adc_channel_num channel;
+    struct adc_config config_adc;
+    uint8_t adc_id;
 };
 #endif
 

@@ -176,6 +176,15 @@ typedef enum {
     BUTTON2 = PC27,
     BUTTON3 = PC28,
 
+    A0 = PB08,
+    A1 = PB09,
+    A2 = PA07,
+    A3 = PB04,
+    A4 = PB05,
+    A5 = PB06,
+    A6 = PA04,
+    A7 = PB07,
+
     RTL8720D_SPI_MOSI = PB24,
     RTL8720D_SPI_MISO = PC24,
     RTL8720D_SPI_SCK  = PB25,
