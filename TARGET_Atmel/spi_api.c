@@ -289,10 +289,10 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel
     /* Set up the GCLK for the module */
     struct system_gclk_chan_config gclk_chan_conf;
     system_gclk_chan_get_config_defaults(&gclk_chan_conf);
-    gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
+    gclk_chan_conf.source_generator = GCLK_GENERATOR_0;
     system_gclk_chan_set_config(chan_index[sercom_index], &gclk_chan_conf);
     system_gclk_chan_enable(chan_index[sercom_index]);
-    sercom_set_gclk_generator(GCLK_GENERATOR_0, false);
+    sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
 
     /* Set the SERCOM in SPI master mode */
     _SPI(obj).SERCOM_CTRLA |= SERCOM_I2CS_CTRLA_MODE_SPI_MASTER;
