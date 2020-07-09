@@ -96,7 +96,7 @@ struct _system_clock_module {
 	volatile struct _system_clock_dfll_config dfll;
 
 #ifdef FEATURE_SYSTEM_CLOCK_DPLL
-	volatile struct _system_clock_dpll_config dpll;
+	volatile struct _system_clock_dpll_config dpll[2];
 #endif
 
 	volatile struct _system_clock_xosc_config xosc;
@@ -116,7 +116,10 @@ static struct _system_clock_module _system_clock_inst = {
 		},
 
 #ifdef FEATURE_SYSTEM_CLOCK_DPLL
-		.dpll = {
+		.dpll[0] = {
+			.frequency   = 0,
+		},
+		.dpll[1] = {
 			.frequency   = 0,
 		},
 #endif
@@ -211,13 +214,13 @@ uint32_t system_clock_source_get_hz(
 			return 0;
 		}
 
-		return _system_clock_inst.dpll.frequency;
+		return _system_clock_inst.dpll[0].frequency;
 	case SYSTEM_CLOCK_SOURCE_DPLL1:
 		if (!(OSCCTRL_REGS->DPLL[1].OSCCTRL_DPLLCTRLA & OSCCTRL_DPLLCTRLA_ENABLE(1))) {
 			return 0;
 		}
 
-		return _system_clock_inst.dpll.frequency;
+		return _system_clock_inst.dpll[1].frequency;
 #endif
 
 	default:
@@ -437,7 +440,7 @@ void system_clock_source_dpll_set_config(
 	/*
 	 * Fck = Fckrx * (LDR + 1 + LDRFRAC / 16)
 	 */
-	_system_clock_inst.dpll.frequency =
+	_system_clock_inst.dpll[dpll].frequency =
 			(refclk * (((tmpldr + 1) << 4) + tmpldrfrac)) >> 4;
 }
 #endif
