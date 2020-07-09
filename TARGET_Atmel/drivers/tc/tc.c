@@ -443,10 +443,7 @@ uint32_t tc_get_count_value(
     tc_registers_t *const tc_module = module_inst->hw;
 
     tc_module->COUNT32.TC_CTRLBSET = TC_CTRLBSET_CMD_READSYNC;
-
-    while (tc_is_syncing(module_inst)) {
-        /* Wait for sync */
-    }
+    while (tc_module->COUNT32.TC_CTRLBSET & TC_CTRLBSET_CMD_Msk);
 
     /* Read from based on the TC counter size */
     switch (module_inst->counter_size) {
@@ -486,10 +483,7 @@ uint32_t tc_get_capture_value(
     tc_registers_t *const tc_module = module_inst->hw;
 
     tc_module->COUNT32.TC_CTRLBSET = TC_CTRLBSET_CMD_READSYNC;
-
-    while (tc_is_syncing(module_inst)) {
-        /* Wait for sync */
-    }
+    while (tc_module->COUNT32.TC_CTRLBSET & TC_CTRLBSET_CMD_Msk);
 
     /* Read out based on the TC counter size */
     switch (module_inst->counter_size) {
