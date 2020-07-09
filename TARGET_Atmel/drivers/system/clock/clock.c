@@ -918,7 +918,6 @@ void system_clock_init(void)
 	/* Configure all GCLK generators except for the main generator, which
 	 * is configured later after all other clock systems are set up */
 	_CONF_CLOCK_GCLK_CONFIG(1);
-	//_CONF_CLOCK_GCLK_CONFIG(2);
 	_CONF_CLOCK_GCLK_CONFIG(3);
 	_CONF_CLOCK_GCLK_CONFIG(4);
 	_CONF_CLOCK_GCLK_CONFIG(5);
@@ -1091,5 +1090,6 @@ void system_clock_init(void)
 #if CONF_CLOCK_CONFIGURE_GCLK == true
 	/* Configure the main GCLK last as it might depend on other generators */
 	_CONF_CLOCK_GCLK_CONFIG(0);
+	_CONF_CLOCK_GCLK_CONFIG(2);
 #endif
 }
