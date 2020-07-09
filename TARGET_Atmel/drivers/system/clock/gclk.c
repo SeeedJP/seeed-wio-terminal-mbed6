@@ -213,16 +213,12 @@ void system_gclk_gen_set_config(
 	system_interrupt_enter_critical_section();
 
 	/* Write the new generator configuration */
-	while (system_gclk_is_syncing()) {
-		/* Wait for synchronization */
-	};
 	GCLK_REGS->GCLK_GENCTRL[generator] = new_genctrl_config;
-#if 0
+
 	while (system_gclk_is_syncing()) {
 		/* Wait for synchronization */
 	};
-	GCLK->GENCTRL.reg = new_genctrl_config | (GCLK->GENCTRL.reg & GCLK_GENCTRL_GENEN);
-#endif
+
 	system_interrupt_leave_critical_section();
 }
 

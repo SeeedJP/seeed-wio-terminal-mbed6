@@ -48,17 +48,8 @@
 #include "system.h"
 
 #ifndef SYSCTRL_FUSES_OSC32K_ADDR
-#if (SAMR21) || (SAMD) || (SAMHA1)
-#  define SYSCTRL_FUSES_OSC32K_ADDR FUSES_OSC32K_CAL_ADDR
-#  define SYSCTRL_FUSES_OSC32K_Pos  FUSES_OSC32K_CAL_Pos
-#elif (SAML21)
-#  define SYSCTRL_FUSES_OSC32K_ADDR NVMCTRL_OTP4
-#  define SYSCTRL_FUSES_OSC32K_Pos  6
-
-#else
 #  define SYSCTRL_FUSES_OSC32K_ADDR SYSCTRL_FUSES_OSC32K_CAL_ADDR
 #  define SYSCTRL_FUSES_OSC32K_Pos  SYSCTRL_FUSES_OSC32K_CAL_Pos
-#endif
 #endif
 
 /**
@@ -241,7 +232,6 @@ void system_clock_source_xosc_set_config(
 		const uint8_t xosc,
 		struct system_clock_source_xosc_config *const config)
 {
-	#warning hogehoge
 	uint32_t xoscctrl = OSCCTRL_REGS->OSCCTRL_XOSCCTRL[xosc];
 	xoscctrl &= ~(
 		OSCCTRL_XOSCCTRL_STARTUP_Msk |
@@ -736,18 +726,10 @@ void system_clock_init(void)
 {
 	/* Various bits in the INTFLAG register can be set to one at startup.
 	   This will ensure that these bits are cleared */
-#if 0
-	SYSCTRL->INTFLAG.reg = SYSCTRL_INTFLAG_BOD33RDY | SYSCTRL_INTFLAG_BOD33DET |
-			SYSCTRL_INTFLAG_DFLLRDY;
-#endif
 	SUPC_REGS->SUPC_INTFLAG =
 			SUPC_INTFLAG_BOD33RDY(1) |
 			SUPC_INTFLAG_BOD33DET(1);
 
-#if 0
-#warning hogehoge
-	system_flash_set_waitstates(CONF_CLOCK_FLASH_WAIT_STATES);
-#endif
 	/* Switch all peripheral clock to a not enabled general clock to save power. */
 	_switch_peripheral_gclk();
 
@@ -1055,12 +1037,6 @@ void system_clock_init(void)
 
 	/* CPU and BUS clocks */
 	system_cpu_clock_set_divider(CONF_CLOCK_CPU_DIVIDER);
-
-#if 0
-	system_apb_clock_set_divider(SYSTEM_CLOCK_APB_APBA, CONF_CLOCK_APBA_DIVIDER);
-	system_apb_clock_set_divider(SYSTEM_CLOCK_APB_APBB, CONF_CLOCK_APBB_DIVIDER);
-	system_apb_clock_set_divider(SYSTEM_CLOCK_APB_APBC, CONF_CLOCK_APBC_DIVIDER);
-#endif
 
 	/* GCLK 0 */
 #if CONF_CLOCK_CONFIGURE_GCLK == true
