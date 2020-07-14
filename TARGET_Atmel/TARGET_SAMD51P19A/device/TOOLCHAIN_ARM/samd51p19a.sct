@@ -20,6 +20,7 @@ LR_IROM1 (0x00000000+0x4000) (0x80000-0x4000)  {    ; load region size_region
 
     ; [RAM] Vector table dynamic copy: 136 vectors * 4 bytes
     RW_IRAM1 (0x20000000+0x300) (0x30000-0x300)  {  ; RW data
+        *(.hsram)
         .ANY (+RW +ZI)
     }
 
