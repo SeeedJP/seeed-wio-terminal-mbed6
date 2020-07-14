@@ -22,6 +22,8 @@
 #include "sercom_drv.h"
 
 #include "pinmap_function.h"
+#include "platform/mbed_thread.h"
+#include "dma.h"
 
 #define SPI_MOSI_INDEX	0
 #define SPI_MISO_INDEX	1
@@ -289,7 +291,14 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel
     /* Set up the GCLK for the module */
     struct system_gclk_chan_config gclk_chan_conf;
     system_gclk_chan_get_config_defaults(&gclk_chan_conf);
-    gclk_chan_conf.source_generator = GCLK_GENERATOR_0;
+    switch (sercom_index) {
+        case 7 /* LCD */ :
+            gclk_chan_conf.source_generator = GCLK_GENERATOR_0;
+            break;
+        default:
+            gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
+            break;
+    }
     system_gclk_chan_set_config(chan_index[sercom_index], &gclk_chan_conf);
     system_gclk_chan_enable(chan_index[sercom_index]);
     sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
@@ -320,7 +329,6 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel
 
     /* Get baud value, based on baudrate and the internal clock frequency */
     uint32_t internal_clock = system_gclk_chan_get_hz(chan_index[sercom_index]);
-    //internal_clock = 8000000;
     error_code = _sercom_get_sync_baud_val(SPI_DEFAULT_BAUD, internal_clock, &baud);
     if (error_code != STATUS_OK) {
         /* Baud rate calculation error */
@@ -679,6 +687,7 @@ const PinMap *spi_slave_cs_pinmap()
  * @{
  */
 
+struct dma_resource dma_resource[8][2];
 
 /**
  * \internal
@@ -780,7 +789,9 @@ static void (*irq_handler[SERCOM_INST_NUM])(void);
 
 void spi_irq(const uint8_t instance, const uint8_t offset)
 {
-    irq_handler[instance]();
+    if (irq_handler[instance]) {
+        irq_handler[instance]();
+    }
 }
 
 static IRQn_Type get_serial_irq_num (const uint8_t sercom_index)
@@ -893,6 +904,127 @@ static enum status_code _spi_transceive_buffer(spi_t *obj)
     return (enum status_code)(obj->spi.status);
 }
 
+static bool transfer_complete[DMAC_CHANNEL_NUMBER];
+void spi_master_transfer_complete(struct dma_resource *resource)
+{
+    transfer_complete[resource->channel_id] = true;
+
+    dma_free(resource);
+}
+
+static void wait_for_transfer_completion(uint8_t channel_id)
+{
+    do {
+        thread_sleep_for(0);
+    } while (transfer_complete[channel_id] != true);
+}
+
+/**
+ * CHCTRLA.TRIGSRC
+ *   SERCOM0 RX = 0x04,  TX = 0x05
+ *   SERCOM1 RX = 0x06,  TX = 0x07
+ *   SERCOM2 RX = 0x08,  TX = 0x09
+ *   SERCOM3 RX = 0x0a,  TX = 0x0b
+ *   SERCOM4 RX = 0x0c,  TX = 0x0d
+ *   SERCOM5 RX = 0x0e,  TX = 0x0f
+ *   SERCOM6 RX = 0x10,  TX = 0x11
+ *   SERCOM7 RX = 0x12,  TX = 0x13
+ */
+#define SPI_TRIGSRC(id, tx) (0x04 + (2 * (id)) + ((tx) ? 1 : 0))
+
+void spi_master_dma_transfer(spi_t *obj, const void *tx, size_t tx_length, void *rx, size_t rx_length, uint8_t bit_width, uint32_t handler, uint32_t event)
+{
+    uint8_t sercom_index = _sercom_get_sercom_inst_index(obj->spi.spi);
+
+    if (!tx || tx_length == 0) {
+        tx = NULL;
+        tx_length = rx_length;
+    }
+
+    if (tx_length == 0) {
+        return;
+    }
+
+    struct dma_resource *tx_resource = &dma_resource[sercom_index][1];
+    struct dma_resource_config dma_config;
+    dma_get_config_defaults(&dma_config);
+    dma_config.peripheral_trigger = SPI_TRIGSRC(sercom_index, 1);
+    dma_config.trigger_action = DMA_TRIGGER_ACTION_BURST;
+
+    if (dma_allocate(tx_resource, &dma_config) != STATUS_OK) {
+        return;
+    }
+    struct dma_descriptor_config tx_desc_config;
+    dma_descriptor_get_config_defaults(&tx_desc_config);
+    tx_desc_config.block_transfer_count = tx_length;
+    tx_desc_config.destination_address = (uint32_t)&_SPI(obj).SERCOM_DATA;
+    tx_desc_config.dst_increment_enable = false;
+    tx_desc_config.beat_size = DMA_BEAT_SIZE_BYTE;
+    if (tx) {
+        tx_desc_config.source_address = (uint32_t)(&tx[tx_length]);
+        tx_desc_config.src_increment_enable = true;
+        tx_desc_config.step_selection = DMA_STEPSEL_SRC;
+
+    } else {
+        static char dummy = 0;
+        tx_desc_config.source_address = (uint32_t)&dummy;
+        tx_desc_config.src_increment_enable = false;
+        tx_desc_config.step_selection = DMA_STEPSEL_DST;
+    }
+
+    dmac_descriptor_registers_t *desc = &descriptor_section[tx_resource->channel_id];
+    dma_descriptor_create(desc, &tx_desc_config);
+    dma_add_descriptor(tx_resource, desc);
+
+    struct dma_resource *rx_resource = &dma_resource[sercom_index][0];
+    if (rx) {
+        struct dma_resource_config dma_config;
+        dma_get_config_defaults(&dma_config);
+        dma_config.peripheral_trigger = SPI_TRIGSRC(sercom_index, 0);
+        dma_config.trigger_action = DMA_TRIGGER_ACTION_BURST;
+
+        if (dma_allocate(rx_resource, &dma_config) == STATUS_OK) {
+            struct dma_descriptor_config rx_desc_config;
+            dma_descriptor_get_config_defaults(&rx_desc_config);
+            rx_desc_config.block_transfer_count = rx_length;
+            rx_desc_config.source_address = (uint32_t)&_SPI(obj).SERCOM_DATA;
+            rx_desc_config.src_increment_enable = false;
+            rx_desc_config.destination_address = (uint32_t)(&rx[rx_length]);
+            rx_desc_config.dst_increment_enable = true;
+            rx_desc_config.beat_size = DMA_BEAT_SIZE_BYTE;
+            rx_desc_config.step_selection = DMA_STEPSEL_DST;
+
+            dmac_descriptor_registers_t *desc = &descriptor_section[rx_resource->channel_id];
+            dma_descriptor_create(desc, &rx_desc_config);
+            dma_add_descriptor(rx_resource, desc);
+
+            dma_register_callback(rx_resource, spi_master_transfer_complete, DMA_CALLBACK_TRANSFER_DONE);
+            dma_enable_callback(rx_resource, DMA_CALLBACK_TRANSFER_DONE);
+            dma_start_transfer_job(rx_resource);
+        }
+    }
+
+    if (rx) {
+        _SPI(obj).SERCOM_CTRLB |= SERCOM_SPIM_CTRLB_RXEN(1);
+    } else {
+        _SPI(obj).SERCOM_CTRLB &= ~SERCOM_SPIM_CTRLB_RXEN(1);
+    }
+    while (spi_is_syncing(obj));
+
+    transfer_complete[tx_resource->channel_id] = false;
+    if (rx) {
+        transfer_complete[rx_resource->channel_id] = false;
+    }
+    dma_register_callback(tx_resource, spi_master_transfer_complete, DMA_CALLBACK_TRANSFER_DONE);
+    dma_enable_callback(tx_resource, DMA_CALLBACK_TRANSFER_DONE);
+    dma_start_transfer_job(tx_resource);
+
+    wait_for_transfer_completion(tx_resource->channel_id);
+    if (rx) {
+        wait_for_transfer_completion(rx_resource->channel_id);
+    }
+}
+
 /** Begin the SPI transfer. Buffer pointers and lengths are specified in tx_buff and rx_buff
  *
  * @param[in] obj       The SPI object which holds the transfer information
@@ -915,6 +1047,13 @@ void spi_master_transfer(spi_t *obj, const void *tx, size_t tx_length, void *rx,
     uint8_t sercom_index = _sercom_get_sercom_inst_index(obj->spi.spi);
     IRQn_Type irq_n_0 = get_serial_irq_num(sercom_index);
 
+    if (1) { //hint != DMA_USAGE_NEVER
+        spi_master_dma_transfer(obj, tx, tx_length, rx, rx_length, bit_width, handler, event);
+        return;
+    }
+
+    /* hint == DMA_USAGE_NEVER */
+#if 0
     obj->spi.tx_buffer = (void *)tx;
     obj->tx_buff.buffer =(void *)tx;
     obj->tx_buff.pos = 0;
@@ -955,7 +1094,6 @@ void spi_master_transfer(spi_t *obj, const void *tx, size_t tx_length, void *rx,
 
     obj->spi.dma_usage = hint;
 
-    /*if (hint == DMA_USAGE_NEVER) {** TEMP: Commented as DMA is not implemented now */
     /* Use irq method */
     uint16_t irq_mask = 0;
     obj->spi.status = STATUS_BUSY;
@@ -981,7 +1119,7 @@ void spi_master_transfer(spi_t *obj, const void *tx, size_t tx_length, void *rx,
         irq_mask |= SERCOM_SPIM_INTFLAG_ERROR(1);
     }
     _SPI(obj).SERCOM_INTENSET = irq_mask;
-    /*} ** TEMP: Commented as DMA is not implemented now */
+#endif
 }
 
 /** The asynchronous IRQ handler
