@@ -22,9 +22,9 @@
 #include "tc_drv.h"
 #include "tc_interrupt.h"
 
-#define TICKER_COUNTER_uS		TC0_REGS
-#define TICKER_COUNTER_IRQn		TC0_IRQn
-#define TICKER_COUNTER_Handlr	TC0_Handler
+#define TICKER_COUNTER_uS		TC2_REGS
+#define TICKER_COUNTER_IRQn		TC2_IRQn
+#define TICKER_COUNTER_Handlr	TC2_Handler
 #define TICKER_COUNTER_BIT_WIDTH TC_COUNTER_SIZE_32BIT
 
 static int us_ticker_inited = 0;
