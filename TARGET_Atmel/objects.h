@@ -25,6 +25,8 @@
 #include "i2c_master.h"
 #include "i2c_slave.h"
 #include "adc_feature.h"
+#include "tcc_drv.h"
+#include "tc_drv.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,11 +83,17 @@ struct analogin_s {
 
 #if DEVICE_PWMOUT
 struct pwmout_s {
-    uint32_t channel;
-    uint32_t ioline;
-    uint32_t pin;
-    uint32_t prescalarindex;
-    struct waveconfig_t waveconfig;
+    union {
+        struct tcc_module tcc;
+        struct tc_module tc;
+    } module;
+    PinName pin;
+    uint32_t period;
+    float duty_cycle;
+    double us_per_cycle;
+    enum gclk_generator clock_source;
+    int clock_prescaler;
+    int bit_width;
 };
 #endif
 

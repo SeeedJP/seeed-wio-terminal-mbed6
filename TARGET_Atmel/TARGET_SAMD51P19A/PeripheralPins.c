@@ -124,8 +124,25 @@ const PinMap PinMap_EXTINT[] = {
     {NC, NC, NC}
 };
 
+#define TC_TCC_WO(n) ((n) << 4)
+
 const PinMap PinMap_PWM[] = {
-    //{PA00, PWM_2, 0},
+    /* PWM0 */
+    { PB08, TC4_BASE_ADDRESS, PINMUX_PB08E_TC4_WO0 | TC_TCC_WO(0) },
+    /* PWM1 - Conflict with PWM4 */
+    { PA07, TC1_BASE_ADDRESS, PINMUX_PA07E_TC1_WO1 | TC_TCC_WO(1) },
+    /* PWM2 */
+    { PB03, TC6_BASE_ADDRESS, PINMUX_PB03E_TC6_WO1 | TC_TCC_WO(1) },
+    /* PWM3 */
+    { PA04, TC0_BASE_ADDRESS, PINMUX_PA04E_TC0_WO0 | TC_TCC_WO(0) },
+    /* PWM4 - Conflict with PWM1 */
+    { PA06, TC1_BASE_ADDRESS, PINMUX_PA06E_TC1_WO0 | TC_TCC_WO(0) },
+
+    /* Buzzer */
+    { PD11, TCC0_BASE_ADDRESS, PINMUX_PD11F_TCC0_WO4 | TC_TCC_WO(4) },
+    /* User LED */
+    { PA15, TCC1_BASE_ADDRESS, PINMUX_PA15G_TCC1_WO3 | TC_TCC_WO(3) },
+
     /* Not connected */
     {NC  , NC   , NC}
 };

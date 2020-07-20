@@ -213,7 +213,7 @@ uint32_t pinmap_channel_pwm(PinName pin, uint32_t pwm_index)
 
     while (pwm_ch->pin != NC) {
         if (pin == pwm_ch->pin) {
-            return (uint32_t)pwm_ch->peripheral;
+            return (pwm_ch->function >> 4) & 0xf;
         }
         pwm_ch++;
     }
