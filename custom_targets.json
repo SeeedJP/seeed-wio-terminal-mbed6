@@ -43,6 +43,7 @@
             "USTICKER",
             "SLEEP",
             "ANALOGIN",
+            "PWMOUT",
             "PORTIN",
             "PORTOUT",
             "INTERRUPTIN",
