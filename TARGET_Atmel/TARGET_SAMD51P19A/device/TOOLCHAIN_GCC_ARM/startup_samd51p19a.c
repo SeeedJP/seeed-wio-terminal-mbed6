@@ -45,6 +45,8 @@ int main(void);
 /** \endcond */
 
 void __libc_init_array(void);
+void SystemInit(void);
+void software_init_hook(void) __attribute__((weak));
 
 /* Reset handler */
 void Reset_Handler(void);
@@ -387,11 +389,17 @@ void Reset_Handler(void)
         pSrc = (uint32_t *) & _sfixed;
         SCB->VTOR = ((uint32_t) pSrc & SCB_VTOR_TBLOFF_Msk);
 
-        /* Initialize the C library */
-        __libc_init_array();
+        SystemInit();
 
-        /* Branch to main function */
-        main();
+        if (software_init_hook) {
+            software_init_hook();
+        } else {
+            /* Initialize the C library */
+            __libc_init_array();
+
+            /* Branch to main function */
+            main();
+        }
 
         /* Infinite loop */
         while (1);

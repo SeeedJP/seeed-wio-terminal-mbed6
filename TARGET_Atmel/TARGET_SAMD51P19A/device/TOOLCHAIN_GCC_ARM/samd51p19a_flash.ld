@@ -35,14 +35,14 @@ SEARCH_DIR(.)
 /* Memory Spaces Definitions */
 MEMORY
 {
-  rom      (rx)  : ORIGIN = 0x00000000 + 0x4000, LENGTH = 0x00080000
-  ram      (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00030000
+  rom      (rx)  : ORIGIN = 0x00000000 + 0x4000, LENGTH = 0x00080000 - 0x4000
+  ram      (rwx) : ORIGIN = 0x20000000 + 0x300, LENGTH = 0x00030000 - 0x300
   bkupram  (rwx) : ORIGIN = 0x47000000, LENGTH = 0x00002000
   qspi     (rwx) : ORIGIN = 0x04000000, LENGTH = 0x01000000
 }
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
-STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0xC000;
+STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x2000;
 
 /* Section Definitions */
 SECTIONS
@@ -111,6 +111,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _srelocate = .;
+        *(.hsram);
         *(.ramfunc .ramfunc.*);
         *(.data .data.*);
         . = ALIGN(4);
@@ -160,10 +161,12 @@ SECTIONS
     .stack (NOLOAD):
     {
         . = ALIGN(8);
+        __StackTop = .;
         _sstack = .;
         . = . + STACK_SIZE;
         . = ALIGN(8);
         _estack = .;
+        __StackLimit = .;
     } > ram
 
     . = ALIGN(4);
