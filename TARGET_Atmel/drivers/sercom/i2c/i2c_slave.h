@@ -438,7 +438,7 @@ static inline bool i2c_slave_is_syncing(
  *
  * \param[in]  module  Pointer to software module structure
  */
-static void _i2c_slave_wait_for_sync(
+static inline void _i2c_slave_wait_for_sync(
     const struct i2c_slave_module *const module)
 {
     /* Sanity check. */
