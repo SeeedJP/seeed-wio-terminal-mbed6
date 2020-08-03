@@ -196,9 +196,9 @@
 #  define CONF_CLOCK_GCLK_5_OUTPUT_ENABLE         false
 
 /* Configure GCLK generator 6 */
-#  define CONF_CLOCK_GCLK_6_ENABLE                false
-#  define CONF_CLOCK_GCLK_6_RUN_IN_STANDBY        false
-#  define CONF_CLOCK_GCLK_6_CLOCK_SOURCE          SYSTEM_CLOCK_SOURCE_DFLL
+#  define CONF_CLOCK_GCLK_6_ENABLE                true
+#  define CONF_CLOCK_GCLK_6_RUN_IN_STANDBY        true
+#  define CONF_CLOCK_GCLK_6_CLOCK_SOURCE          SYSTEM_CLOCK_SOURCE_XOSC32K
 #  define CONF_CLOCK_GCLK_6_PRESCALER             1
 #  define CONF_CLOCK_GCLK_6_OUTPUT_ENABLE         false
 
