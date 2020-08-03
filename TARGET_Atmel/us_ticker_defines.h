@@ -19,6 +19,6 @@
 
 #define US_TICKER_PERIOD_NUM    (1)
 #define US_TICKER_PERIOD_DEN    (1)
-#define US_TICKER_MASK          0xFFFFFFFF
+#define US_TICKER_MASK          0x0000FFFF
 
 #endif /* _US_TICKER_DEFINES_H_ */

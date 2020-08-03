@@ -25,7 +25,7 @@
 #define TICKER_COUNTER_uS		TC2_REGS
 #define TICKER_COUNTER_IRQn		TC2_IRQn
 #define TICKER_COUNTER_Handlr	TC2_Handler
-#define TICKER_COUNTER_BIT_WIDTH TC_COUNTER_SIZE_32BIT
+#define TICKER_COUNTER_BIT_WIDTH TC_COUNTER_SIZE_16BIT
 
 static int us_ticker_inited = 0;
 extern uint8_t g_sys_init;
@@ -124,7 +124,7 @@ const ticker_info_t *us_ticker_get_info(void)
 {
     static const ticker_info_t info = {
         1000000,
-        32
+        16
     };
     return &info;
 }
