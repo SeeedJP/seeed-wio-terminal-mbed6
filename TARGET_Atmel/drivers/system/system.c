@@ -99,12 +99,6 @@ void system_init(void)
 	/* Initialize board hardware */
 	system_board_init();
 
-#if 1
-#include "raw_serial.h"
-	raw_serial_init();
-	raw_serial_write("*** RAW SERIAL ENABLED ***\r\n");
-#endif
-
 	/* Initialize EVSYS hardware */
 	_system_events_init();
 
