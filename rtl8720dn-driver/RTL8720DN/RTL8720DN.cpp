@@ -1249,11 +1249,11 @@ bool RTL8720DN::_recv_ap(nsapi_wifi_ap_t *ap)
     int sec = NSAPI_SECURITY_UNKNOWN;
     int dummy;
     int ret;
+    char raw_ssid[35];
 
-        //ret = _parser.scanf("(%d,\"%32[^\"]\",%hhd,\"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx\",%hhu)\n",
-        ret = _parser.scanf("(%d,\"%32[^\"]\",%hhd,\"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx\",%hhu)\n",
+        ret = _parser.scanf("(%d,%32[^,],%hhd,\"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx\",%hhu)\n",
                             &sec,
-                            ap->ssid,
+                            raw_ssid,
                             &ap->rssi,
                             &ap->bssid[0], &ap->bssid[1], &ap->bssid[2], &ap->bssid[3], &ap->bssid[4], &ap->bssid[5],
                             &ap->channel);
@@ -1262,6 +1262,9 @@ bool RTL8720DN::_recv_ap(nsapi_wifi_ap_t *ap)
         _parser.abort();
         tr_warning("_recv_ap(): AP info missing.");
     }
+
+    ap->ssid[0] = '\0';
+    sscanf(raw_ssid, "\"%32[^\"]\"", ap->ssid);
 
     ap->security = sec < 5 ? (nsapi_security_t)sec : NSAPI_SECURITY_UNKNOWN;
 

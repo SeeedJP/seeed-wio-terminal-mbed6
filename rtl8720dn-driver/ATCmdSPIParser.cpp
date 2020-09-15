@@ -371,10 +371,6 @@ restart:
                 _in_prev = c;
             }
 
-            if (c == '"' && _buffer[offset + j - 1] == '"') {
-                _buffer[offset + j++] = ' '; //Stealth AP
-            }
-
             if ((offset + j + 1) > _buffer_size) {
                 return -1;
             }
