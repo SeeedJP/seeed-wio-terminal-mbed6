@@ -131,6 +131,12 @@ struct spi_s {
 };
 #endif
 
+#if DEVICE_TRNG
+struct trng_s {
+    void *reserved;
+};
+#endif
+
 #ifdef __cplusplus
 }
 #endif

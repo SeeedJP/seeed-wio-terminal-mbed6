@@ -54,6 +54,7 @@
             "SPI",
             "SPI_ASYNCH",
             "USBDEVICE",
+            "TRNG",
             "MPU"
         ],
         "features_add": [
