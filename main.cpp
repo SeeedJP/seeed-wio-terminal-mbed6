@@ -9,6 +9,7 @@
 //#define MBED_BUZZER_EXAMPLE
 //#define MBED_LIGHT_EXAMPLE
 //#define MBED_ACCEL_EXAMPLE
+//#define MBED_TLS_CLIENT_EXAMPLE
 
 #if defined(MBED_LCD_EXAMPLE)
 #include "examples/lcd.cpp"
@@ -18,6 +19,9 @@
 #include "examples/light.cpp"
 #elif defined(MBED_ACCEL_EXAMPLE)
 #include "examples/accel.cpp"
+#elif defined(MBED_TLS_CLIENT_EXAMPLE)
+#include "examples/tls-client.cpp"
+#include "examples/HelloHttpsClient.cpp"
 #else /* MBED_BLINKY_EXAMPLE */
 #include "mbed.h"
 
