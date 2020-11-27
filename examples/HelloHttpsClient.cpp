@@ -19,6 +19,7 @@
  *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 
+#include "example.h"
 #if defined(MBED_TLS_CLIENT_EXAMPLE)
 #include "HelloHttpsClient.h"
 

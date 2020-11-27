@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "example.h"
 #if defined(MBED_LCD_EXAMPLE)
 #include "mbed.h"
 #include "SPI_TFT_ILI9341.h"

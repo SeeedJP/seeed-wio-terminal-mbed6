@@ -31,6 +31,8 @@
  * TCP socket. The logic class handles all events, leaving the main loop to just
  * check if the process  has finished.
  */
+
+#include "example.h"
 #if defined(MBED_TLS_CLIENT_EXAMPLE)
 #include "mbed.h"
 
